@@ -1,10 +1,11 @@
 {
   "name": "sola-mcp",
-  "module": "index.ts",
+  "module": "http.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run index.ts",
+    "start": "bun run http.ts",
+    "start-local": "bun run index.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

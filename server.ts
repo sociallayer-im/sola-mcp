@@ -129,3 +129,10 @@ server.tool('venue/get', { venueId: z.string().describe('Venue ID, like 123') },
       };
     }
 });
+
+// server.tool('group/is_member', { groupId: z.string(), profileId: z.string() }, async ({ groupId, profileId }) => {
+//   console.log('group/is_member', groupId, profileId);
+//   return {
+//     content: [{ type: 'text', text: String(a + b) }],
+//   };
+// });
