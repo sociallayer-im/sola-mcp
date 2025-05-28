@@ -9,6 +9,7 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10",
     "@types/bun": "latest",
     "prettier": "^3.5.3"
   },
