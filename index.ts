@@ -5,7 +5,11 @@ import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
+import axios, {isCancel, AxiosError} from 'axios';
 
+
+const BASE_URL = 'https://api.sola.day';
+// const BASE_URL = 'http://localhost:3333';
 
 // Create an MCP server
 const server = new McpServer({
@@ -24,19 +28,128 @@ server.tool('add', { a: z.number(), b: z.number() }, async ({ a, b }) => {
   };
 });
 
-// Add a dynamic greeting resource
-server.resource(
-  'greeting',
-  new ResourceTemplate('greeting://{name}', { list: undefined }),
-  async (uri, { name }) => ({
-    contents: [
-      {
-        uri: uri.href,
-        text: `Hello, ${name}!`,
-      },
-    ],
-  }),
-);
+server.tool('event/get', { eventId: z.string() }, async ({ eventId }) => {
+  console.log('event/get', eventId);
+  console.log(`${BASE_URL}/api/event/get?id=${eventId}`);
+  try {
+    const response = await axios.get(`${BASE_URL}/api/event/get?id=${eventId}`);
+    return {
+      content: [{ type: 'text', text: JSON.stringify(response.data) }],
+    };
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    return {
+      content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+    };
+  }
+});
+
+server.tool('event/list', {
+  groupId: z.string(),
+  start_date: z.string(),
+  end_date: z.string(),
+  limit: z.number(),
+ }, async ({ groupId, start_date, end_date, limit }) => {
+  console.log('event/list', groupId, start_date, end_date, limit);
+  limit = limit || 10;
+  try {
+    const url = `${BASE_URL}/api/event/list?group_id=${groupId}&start_date=${start_date}&end_date=${end_date}&limit=${limit}`;
+    console.log('event/list', url);
+    const response = await axios.get(url);
+  const events = response.data;
+    return {
+      content: [{ type: 'text', text: JSON.stringify(events) }],
+    };
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    return {
+      content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+    };
+  }
+});
+
+server.tool('event/search', {
+  groupId: z.string(),
+  keyword: z.string(),
+  start_date: z.string(),
+  end_date: z.string(),
+  limit: z.number(),
+ }, async ({ groupId, start_date, end_date, limit, keyword }) => {
+  console.log('event/search', groupId, start_date, end_date, limit, keyword);
+  limit = limit || 10;
+
+  try {
+  const response = await axios.get(`${BASE_URL}/api/event/list?group_id=${groupId}&start_date=${start_date}&end_date=${end_date}&limit=${limit}&search_title=${keyword}`);
+  const events = response.data;
+    return {
+      content: [{ type: 'text', text: JSON.stringify(events) }],
+    };
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    return {
+      content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+    };
+  }
+});
+
+server.tool('group/get', { groupId: z.string() }, async ({ groupId }) => {
+  console.log('group/get', groupId);
+
+  try {
+    const response = await axios.get(`${BASE_URL}/group/get?group_id=${groupId}`);
+    const group = response.data;
+      return {
+        content: [{ type: 'text', text: JSON.stringify(group) }],
+      };
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      return {
+        content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+      };
+    }
+});
+
+server.tool('profile/get', { id: z.string() }, async ({ id }) => {
+  console.log('profile/get', id);
+
+  try {
+    const response = await axios.get(`${BASE_URL}/api/profile/get?id=${id}`);
+    const profile = response.data;
+      return {
+        content: [{ type: 'text', text: JSON.stringify(profile) }],
+      };
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      return {
+        content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+      };
+    }
+});
+
+server.tool('venue/get', { venueId: z.string() }, async ({ venueId }) => {
+  console.log('venue/get', venueId);
+
+  try {
+    const response = await axios.get(`${BASE_URL}/venue/get?id=${venueId}`);
+    const venue = response.data;
+      return {
+        content: [{ type: 'text', text: JSON.stringify(venue) }],
+      };
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      return {
+        content: [{ type: 'text', text: `Error fetching event: ${error}` }],
+      };
+    }
+});
+
+// server.tool('group/is_member', { groupId: z.string(), profileId: z.string() }, async ({ groupId, profileId }) => {
+//   console.log('group/is_member', groupId, profileId);
+//   return {
+//     content: [{ type: 'text', text: String(a + b) }],
+//   };
+// });
+
 
 const app = express();
 app.use(express.json());
@@ -45,7 +158,7 @@ app.use(express.json());
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
 // Handle POST requests for client-to-server communication
-app.post('/mcp', async (req: express.Request, res: express.Response) => {
+app.post('/mcp/public', async (req: express.Request, res: express.Response) => {
   // Check for existing session ID
   const sessionId = req.headers['mcp-session-id'] as string | undefined;
   let transport: StreamableHTTPServerTransport;
@@ -103,10 +216,10 @@ const handleSessionRequest = async (req: express.Request, res: express.Response)
 };
 
 // Handle GET requests for server-to-client notifications via SSE
-app.get('/mcp', handleSessionRequest);
+app.get('/mcp/public', handleSessionRequest);
 
 // Handle DELETE requests for session termination
-app.delete('/mcp', handleSessionRequest);
+app.delete('/mcp/public', handleSessionRequest);
 
 const PORT = 3000;
 app.listen(PORT, () => {
