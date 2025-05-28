@@ -20,14 +20,6 @@ const server = new McpServer({
   author: 'jiangplus',
 });
 
-// Add an addition tool
-server.tool('add', { a: z.number(), b: z.number() }, async ({ a, b }) => {
-  console.log('add', a, b);
-  return {
-    content: [{ type: 'text', text: String(a + b) }],
-  };
-});
-
 server.tool('event/get', { eventId: z.string() }, async ({ eventId }) => {
   console.log('event/get', eventId);
   console.log(`${BASE_URL}/api/event/get?id=${eventId}`);
@@ -149,6 +141,11 @@ server.tool('venue/get', { venueId: z.string().describe('Venue ID, like 123') },
 //     content: [{ type: 'text', text: String(a + b) }],
 //   };
 // });
+
+
+// Start receiving messages on stdin and sending messages on stdout
+// const transport = new StdioServerTransport();
+// await server.connect(transport);
 
 
 const app = express();
