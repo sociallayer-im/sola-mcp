@@ -45,10 +45,10 @@ server.tool('event/get', { eventId: z.string() }, async ({ eventId }) => {
 });
 
 server.tool('event/list', {
-  groupId: z.string(),
-  start_date: z.string(),
-  end_date: z.string(),
-  limit: z.number(),
+  groupId: z.string().describe('Group ID or Group Name, like 3579 or "edge-esmeralda-2025"'),
+  start_date: z.string().describe('Start date, like 2025-05-28'),
+  end_date: z.string().describe('End date, like 2025-05-28'),
+  limit: z.number().optional().describe('Limit, like 10'),
  }, async ({ groupId, start_date, end_date, limit }) => {
   console.log('event/list', groupId, start_date, end_date, limit);
   limit = limit || 10;
@@ -69,11 +69,11 @@ server.tool('event/list', {
 });
 
 server.tool('event/search', {
-  groupId: z.string(),
-  keyword: z.string(),
-  start_date: z.string(),
-  end_date: z.string(),
-  limit: z.number(),
+  groupId: z.string().describe('Group ID or Group Name, like 3579 or "edge-esmeralda-2025"'),
+  keyword: z.string().describe('Keyword, like "music"'),
+  start_date: z.string().describe('Start date, like 2025-05-28'),
+  end_date: z.string().describe('End date, like 2025-05-28'),
+  limit: z.number().optional().describe('Limit, like 10'),
  }, async ({ groupId, start_date, end_date, limit, keyword }) => {
   console.log('event/search', groupId, start_date, end_date, limit, keyword);
   limit = limit || 10;
@@ -92,7 +92,7 @@ server.tool('event/search', {
   }
 });
 
-server.tool('group/get', { groupId: z.string() }, async ({ groupId }) => {
+server.tool('group/get', { groupId: z.string().describe('Group ID or Group Name, like 3579 or "edge-esmeralda-2025"') }, async ({ groupId }) => {
   console.log('group/get', groupId);
 
   try {
@@ -109,7 +109,7 @@ server.tool('group/get', { groupId: z.string() }, async ({ groupId }) => {
     }
 });
 
-server.tool('profile/get', { id: z.string() }, async ({ id }) => {
+server.tool('profile/get', { id: z.string().describe('Profile ID or Profile Name, like 123 or "jiang"') }, async ({ id }) => {
   console.log('profile/get', id);
 
   try {
@@ -126,7 +126,7 @@ server.tool('profile/get', { id: z.string() }, async ({ id }) => {
     }
 });
 
-server.tool('venue/get', { venueId: z.string() }, async ({ venueId }) => {
+server.tool('venue/get', { venueId: z.string().describe('Venue ID, like 123') }, async ({ venueId }) => {
   console.log('venue/get', venueId);
 
   try {
@@ -221,7 +221,7 @@ app.get('/mcp/public', handleSessionRequest);
 // Handle DELETE requests for session termination
 app.delete('/mcp/public', handleSessionRequest);
 
-const PORT = 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`MCP Stateless Streamable HTTP Server listening on port ${PORT}`);
 });

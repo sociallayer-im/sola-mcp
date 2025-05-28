@@ -12,4 +12,8 @@ To run:
 bun run index.ts
 ```
 
-This project was created using `bun init` in bun v1.2.4. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+To inspect:
+
+```bash
+bunx @modelcontextprotocol/inspector http://localhost:3000/mcp/public
+```
