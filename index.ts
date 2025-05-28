@@ -1,18 +1,10 @@
+import express from "express";
+import { randomUUID } from "node:crypto";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-
-
-// // Start receiving messages on stdin and sending messages on stdout
-// const transport = new StdioServerTransport();
-// await server.connect(transport);
-
-import express from "express";
-import { randomUUID } from "node:crypto";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
-
 
 
 const app = express();
@@ -22,7 +14,7 @@ app.use(express.json());
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
 // Handle POST requests for client-to-server communication
-app.post('/mcp', async (req, res) => {
+app.post('/mcp', async (req: express.Request, res: express.Response) => {
   // Check for existing session ID
   const sessionId = req.headers['mcp-session-id'] as string | undefined;
   let transport: StreamableHTTPServerTransport;
@@ -50,7 +42,7 @@ app.post('/mcp', async (req, res) => {
 
 // Create an MCP server
 const server = new McpServer({
-  name: "Dyn",
+  name: "Sola",
   version: "1.0.0",
   description: "MCP server for Social Layer",
   license: "MIT",
@@ -114,4 +106,7 @@ app.get('/mcp', handleSessionRequest);
 // Handle DELETE requests for session termination
 app.delete('/mcp', handleSessionRequest);
 
-app.listen(3000);
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`MCP Stateless Streamable HTTP Server listening on port ${PORT}`);
+});
